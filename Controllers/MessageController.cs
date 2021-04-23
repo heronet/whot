@@ -22,7 +22,11 @@ namespace Controllers
             _context = context;
             _userManager = userManager;
         }
-
+        /// <summary>
+        /// POST api/message
+        /// </summary>
+        /// <param name="messageDTO"></param>
+        /// <returns>The newly created <see cref="Message" /> converted to <see cref="MessageDTO" /></returns>
         [HttpPost]
         public async Task<ActionResult<MessageDTO>> SendMessage(MessageDTO messageDTO)
         {
@@ -42,12 +46,16 @@ namespace Controllers
 
             return BadRequest("Sending Message Failed");
         }
-
+        /// <summary>
+        /// GET api/message/{username}
+        /// </summary>
+        /// <param name="recipientName"></param>
+        /// <returns>A <see cref="List{MessageDTO}" /> representing the conversation</returns>
         [HttpGet("{recipientName}")]
         public async Task<ActionResult<IEnumerable<MessageDTO>>> GetConversation(string recipientName)
         {
             var sender = await _userManager.FindByNameAsync(User.FindFirst(ClaimTypes.Name).Value);
-            var recipient = await _userManager.FindByNameAsync(recipientName);
+            var recipient = await _userManager.FindByNameAsync(recipientName.ToLower().Trim());
 
             if (recipient == null) return BadRequest("Recipient not found");
 
@@ -64,7 +72,12 @@ namespace Controllers
             return Ok(returnableMessages);
         }
 
-
+        /// <summary>
+        /// Utility method.
+        /// Converts Message to MessageDTO
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns><see cref="MessageDTO" /></returns>
         private MessageDTO MessageToDto(Message message)
         {
             return new MessageDTO

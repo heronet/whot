@@ -19,10 +19,10 @@ namespace Controllers
             _userManager = userManager;
         }
         /// <summary>
-        /// Route: api/account/register
+        /// POST api/account/register
         /// </summary>
         /// <param name="registerDTO"></param>
-        /// <returns></returns>
+        /// <returns><see cref="UserAuthDTO" /></returns>
         [HttpPost("register")]
         public async Task<ActionResult<UserAuthDTO>> RegisterUser(RegisterDTO registerDTO)
         {
@@ -38,10 +38,10 @@ namespace Controllers
             return UserToDto(user);
         }
         /// <summary>
-        /// Route: api/account/login
+        /// POST api/account/login
         /// </summary>
         /// <param name="loginDTO"></param>
-        /// <returns></returns>
+        /// <returns><see cref="UserAuthDTO" /></returns>
         [HttpPost("login")]
         public async Task<ActionResult<UserAuthDTO>> LoginUser(LoginDTO loginDTO)
         {
@@ -56,7 +56,12 @@ namespace Controllers
             return BadRequest("Invalid Password");
         }
 
-        // Converts a WhotUser to an AuthUserDto
+        /// <summary>
+        /// Utility Method.
+        /// Converts a WhotUser to an AuthUserDto
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns><see cref="UserAuthDTO" /></returns>
         private UserAuthDTO UserToDto(WhotUser user)
         {
             return new UserAuthDTO

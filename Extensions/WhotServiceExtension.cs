@@ -12,6 +12,12 @@ namespace Extensions
 {
     public static class WhotServiceExtension
     {
+        /// <summary>
+        /// Extension Method to Add Configuration Services
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        /// <returns>A reference to this object after the operation has completed</returns>
         public static IServiceCollection AddWhotServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<AppDbContext>(options =>

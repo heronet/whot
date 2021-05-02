@@ -32,7 +32,10 @@ namespace Controllers
         {
             var sender = await _userManager.FindByNameAsync(User.FindFirst(ClaimTypes.Name).Value);
             var recipient = await _userManager.FindByNameAsync(messageDTO.Recipientname);
-
+            if (recipient == null)
+            {
+                return BadRequest("Invalid Recepient");
+            }
             var message = new Message
             {
                 Text = messageDTO.Text,
@@ -46,6 +49,7 @@ namespace Controllers
 
             return BadRequest("Sending Message Failed");
         }
+
         /// <summary>
         /// GET api/message/{username}
         /// </summary>
@@ -61,7 +65,9 @@ namespace Controllers
 
             var receivedMessages = await _context.Messages.Include(m => m.Sender).Include(m => m.Recipient)
                                                           .Where(msg => (msg.SenderId == sender.Id && msg.RecipientId == recipient.Id)
-                                                                   || (msg.SenderId == recipient.Id && msg.RecipientId == sender.Id)).ToListAsync();
+                                                                   || (msg.SenderId == recipient.Id && msg.RecipientId == sender.Id))
+                                                          .OrderByDescending(m => m.CreatedAt)
+                                                          .ToListAsync();
 
             if (receivedMessages == null) return NoContent();
 
@@ -69,6 +75,49 @@ namespace Controllers
 
             foreach (var msg in receivedMessages)
                 returnableMessages.Add(MessageToDto(msg));
+            return Ok(returnableMessages);
+        }
+
+        /// <summary>
+        /// GET api/message/inbox
+        /// </summary>
+        /// <returns>A <see cref="List{MessageDTO}" /> representing the Inbox</returns>
+        [HttpGet("inbox")]
+        public async Task<ActionResult<IEnumerable<MessageDTO>>> GetInbox()
+        {
+            var userMe = await _userManager.FindByNameAsync(User.FindFirst(ClaimTypes.Name).Value);
+
+            var inboxMessages = await _context.Messages.Include(m => m.Sender).Include(m => m.Recipient)
+                                                          .Where(msg => (msg.SenderId == userMe.Id || msg.RecipientId == userMe.Id))
+                                                          .OrderByDescending(m => m.CreatedAt)
+                                                          .ToListAsync();
+
+            if (inboxMessages == null) return NoContent();
+
+            var usersFound = new List<string>();
+
+            List<MessageDTO> returnableMessages = new List<MessageDTO>();
+
+            foreach (var msg in inboxMessages)
+            {
+                if (msg.SenderId == userMe.Id)
+                {
+                    if (usersFound.IndexOf(msg.RecipientId) == -1)
+                    {
+                        returnableMessages.Add(MessageToDto(msg));
+                        usersFound.Add(msg.RecipientId);
+                    }
+                }
+                if (msg.RecipientId == userMe.Id)
+                {
+                    if (usersFound.IndexOf(msg.SenderId) == -1)
+                    {
+                        returnableMessages.Add(MessageToDto(msg));
+                        usersFound.Add(msg.SenderId);
+                    }
+                }
+            }
+
             return Ok(returnableMessages);
         }
 

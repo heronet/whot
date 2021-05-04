@@ -42,6 +42,7 @@ namespace Controllers
                 Text = messageDTO.Text,
                 Sender = sender,
                 Recipient = recipient,
+                CreatedAt = DateTime.Now
             };
             _context.Messages.Add(message);
 
@@ -57,7 +58,7 @@ namespace Controllers
         /// <param name="recipientName"></param>
         /// <returns>A <see cref="List{MessageDTO}" /> representing the conversation</returns>
         [HttpGet("{recipientName}")]
-        public async Task<ActionResult<IEnumerable<MessageDTO>>> GetConversation(string recipientName)
+        public async Task<ActionResult<IEnumerable<MessageDTO>>> GetConversation(string recipientName, [FromQuery] int skip)
         {
             var sender = await _userManager.FindByNameAsync(User.FindFirst(ClaimTypes.Name).Value);
             var recipient = await _userManager.FindByNameAsync(recipientName.ToLower().Trim());
@@ -68,6 +69,9 @@ namespace Controllers
                                                           .Where(msg => (msg.SenderId == sender.Id && msg.RecipientId == recipient.Id)
                                                                    || (msg.SenderId == recipient.Id && msg.RecipientId == sender.Id))
                                                           .OrderByDescending(m => m.CreatedAt)
+                                                          .Skip(skip)
+                                                          .Take(10)
+                                                          .OrderBy(m => m.CreatedAt)
                                                           .ToListAsync();
 
             if (receivedMessages == null) return NoContent();

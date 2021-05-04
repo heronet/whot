@@ -10,6 +10,6 @@ namespace Models
         public string SenderId { get; set; }
         public WhotUser Recipient { get; set; }
         public string RecipientId { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
     }
 }

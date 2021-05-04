@@ -49,6 +49,7 @@ namespace Utils.SignalR
                 Text = messageDTO.Text,
                 Sender = sender,
                 Recipient = recipient,
+                CreatedAt = DateTime.Now
             };
             _context.Messages.Add(message);
 

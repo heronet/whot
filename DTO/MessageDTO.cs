@@ -11,5 +11,6 @@ namespace DTO
         public string Recipientname { get; set; }
         public string RecipientId { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? UserLastActive { get; set; }
     }
 }

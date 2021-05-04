@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Services;
+using Utils.SignalR;
 
 namespace whot
 {
@@ -27,7 +28,9 @@ namespace whot
         {
             services.AddControllers();
             services.AddCors();
+            services.AddSignalR();
             services.AddScoped<TokenService>();
+            services.AddSingleton<ActiveTracker>();
             services.AddWhotServices(_configuration); // Most of the configurations are in this Extension
         }
 
@@ -43,7 +46,7 @@ namespace whot
 
             app.UseCors(configurePolicy =>
             {
-                configurePolicy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+                configurePolicy.AllowAnyHeader().AllowAnyMethod().AllowCredentials().WithOrigins("http://localhost:4200");
             });
 
             app.UseAuthentication();
@@ -52,6 +55,8 @@ namespace whot
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<ChatHub>("hubs/chat");
+                endpoints.MapHub<ActiveHub>("hubs/active");
             });
         }
     }

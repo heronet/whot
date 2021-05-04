@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -45,7 +46,7 @@ namespace Controllers
             _context.Messages.Add(message);
 
             if (await _context.SaveChangesAsync() > 0)
-                return MessageToDto(message);
+                return MessageToDto(message, recipient.LastActive);
 
             return BadRequest("Sending Message Failed");
         }
@@ -74,7 +75,7 @@ namespace Controllers
             List<MessageDTO> returnableMessages = new List<MessageDTO>();
 
             foreach (var msg in receivedMessages)
-                returnableMessages.Add(MessageToDto(msg));
+                returnableMessages.Add(MessageToDto(msg, recipient.LastActive));
             return Ok(returnableMessages);
         }
 
@@ -104,7 +105,7 @@ namespace Controllers
                 {
                     if (usersFound.IndexOf(msg.RecipientId) == -1)
                     {
-                        returnableMessages.Add(MessageToDto(msg));
+                        returnableMessages.Add(MessageToDto(msg, msg.Recipient.LastActive));
                         usersFound.Add(msg.RecipientId);
                     }
                 }
@@ -112,7 +113,7 @@ namespace Controllers
                 {
                     if (usersFound.IndexOf(msg.SenderId) == -1)
                     {
-                        returnableMessages.Add(MessageToDto(msg));
+                        returnableMessages.Add(MessageToDto(msg, msg.Sender.LastActive));
                         usersFound.Add(msg.SenderId);
                     }
                 }
@@ -127,7 +128,7 @@ namespace Controllers
         /// </summary>
         /// <param name="message"></param>
         /// <returns><see cref="MessageDTO" /></returns>
-        private MessageDTO MessageToDto(Message message)
+        private MessageDTO MessageToDto(Message message, DateTime? lastActive = null)
         {
             return new MessageDTO
             {
@@ -137,7 +138,8 @@ namespace Controllers
                 SenderId = message.Sender.Id,
                 Recipientname = message.Recipient.UserName,
                 RecipientId = message.Recipient.Id,
-                CreatedAt = message.CreatedAt
+                CreatedAt = message.CreatedAt,
+                UserLastActive = lastActive ?? DateTime.UtcNow
             };
         }
     }
